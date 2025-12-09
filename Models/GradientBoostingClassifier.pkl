@@ -1,0 +1,53 @@
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.metrics import ConfusionMatrixDisplay  # Add this import
+
+start = time.time()
+model = GradientBoostingClassifier(random_state=42).fit(X_train, y_train)  # Added random_state
+end_train = time.time()
+y_pred = model.predict(X_test)
+end_predict = time.time()
+
+# Fixed: Added average parameter to f1_score
+accuracy = accuracy_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred, average='weighted')
+precision = precision_score(y_test, y_pred, average='weighted')
+f1s = f1_score(y_test, y_pred, average='weighted')  # Fixed: added average parameter
+MCC = matthews_corrcoef(y_test, y_pred)
+
+print("Accuracy: " + "{:.2%}".format(accuracy),
+      "\nRecall: " + "{:.2%}".format(recall),
+      "\nPrecision: " + "{:.2%}".format(precision),  # Fixed typo: "Precison" → "Precision"
+      "\nF1-Score: " + "{:.2%}".format(f1s),
+      "\nMCC: " + "{:.2%}".format(MCC),
+      "\ntime to train: " + "{:.2f}".format(end_train - start) + " s",
+      "\ntime to predict: " + "{:.2f}".format(end_predict - end_train) + " s",
+      "\ntotal: " + "{:.2f}".format(end_predict - start) + " s"
+      )
+model_performance.loc['Gradient Boosting'] = [accuracy, recall, precision, f1s, MCC, end_train - start,
+                                              end_predict - end_train, end_predict - start]
+
+# Fixed: Replaced plot_confusion_matrix with ConfusionMatrixDisplay
+plt.rcParams['figure.figsize'] = (5, 5)
+plt.rcParams['font.size'] = 10
+sns.set_style('white')
+ConfusionMatrixDisplay.from_estimator(model, X_test, y_test, cmap=plt.cm.Blues)
+plt.title('Confusion Matrix - Gradient Boosting')
+plt.tight_layout()
+plt.show()
+
+# Feature Importance - FIXED (removed groupby line)
+plt.rcParams['figure.figsize'] = (10, 10)
+sns.set_style('white')
+
+# Create feature names (since X_train is numpy array)
+feature_names = [f'Feature_{i}' for i in range(X_train.shape[1])]
+
+feat_importances = pd.Series(model.feature_importances_, index=feature_names)
+# feat_importances = feat_importances.groupby(level=0).mean()  # REMOVED - not needed for simple indexes
+
+feat_importances.nlargest(20).plot(kind='barh').invert_yaxis()
+plt.title('Gradient Boosting - Feature Importances (Top 20)')
+plt.xlabel('Feature Importance Score')
+sns.despine()
+plt.tight_layout()
+plt.show()

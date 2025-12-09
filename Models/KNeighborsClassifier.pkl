@@ -1,0 +1,46 @@
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score, roc_auc_score, matthews_corrcoef
+from sklearn.metrics import ConfusionMatrixDisplay
+import time
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.neighbors import KNeighborsClassifier
+
+model_performance = pd.DataFrame(columns=['Accuracy', 'Recall', 'Precision', 'F1-Score', 'MCC score',
+                                          'time to train', 'time to predict', 'total time'])
+
+# KNN model
+start = time.time()
+model = KNeighborsClassifier(n_neighbors=3).fit(X_train, y_train)
+end_train = time.time()
+y_pred = model.predict(X_test)
+end_predict = time.time()
+
+
+accuracy = accuracy_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred, average='weighted')  # Keep weighted for multi-class
+precision = precision_score(y_test, y_pred, average='weighted')  # Keep weighted for multi-class
+f1s = f1_score(y_test, y_pred, average='weighted')  # Added average for multi-class
+MCC = matthews_corrcoef(y_test, y_pred)
+
+print("Accuracy: " + "{:.2%}".format(accuracy),
+      "\nRecall: " + "{:.2%}".format(recall),
+      "\nPrecision: " + "{:.2%}".format(precision),
+      "\nF1-Score: " + "{:.2%}".format(f1s),
+      "\nMCC: " + "{:.2%}".format(MCC),
+      "\ntime to train: " + "{:.2f}".format(end_train - start) + " s",
+      "\ntime to predict: " + "{:.2f}".format(end_predict - end_train) + " s",
+      "\ntotal: " + "{:.2f}".format(end_predict - start) + " s"
+      )
+
+model_performance.loc['KNN'] = [accuracy, recall, precision, f1s, MCC, end_train - start, end_predict - end_train,
+                                end_predict - start]
+
+# Plot confusion matrix
+plt.rcParams['figure.figsize'] = (5, 5)
+plt.rcParams['font.size'] = 10
+sns.set_style('white')
+
+ConfusionMatrixDisplay.from_estimator(model, X_test, y_test, cmap=plt.cm.Blues)
+plt.title('Confusion Matrix - KNN')
+plt.show()

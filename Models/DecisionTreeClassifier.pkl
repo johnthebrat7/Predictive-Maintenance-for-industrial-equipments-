@@ -1,0 +1,75 @@
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import ConfusionMatrixDisplay
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import time
+import numpy as np
+
+# Decision Tree model
+start = time.time()
+model = DecisionTreeClassifier(random_state=42).fit(X_train, y_train)
+end_train = time.time()
+y_pred = model.predict(X_test)
+end_predict = time.time()
+
+# Calculate metrics
+accuracy = accuracy_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred, average='weighted')
+precision = precision_score(y_test, y_pred, average='weighted')
+f1s = f1_score(y_test, y_pred, average='weighted')
+MCC = matthews_corrcoef(y_test, y_pred)
+
+print("Decision Tree Performance:")
+print(f"Accuracy:  {accuracy:.2%}")
+print(f"Recall:    {recall:.2%}")
+print(f"Precision: {precision:.2%}")
+print(f"F1-Score:  {f1s:.2%}")
+print(f"MCC:       {MCC:.2%}")
+print(f"Time to train:    {end_train - start:.2f} s")
+print(f"Time to predict:  {end_predict - end_train:.2f} s")
+print(f"Total time:       {end_predict - start:.2f} s")
+
+# Store results
+model_performance.loc['Decision Tree'] = [accuracy, recall, precision, f1s, MCC, 
+                                          end_train - start, end_predict - end_train, 
+                                          end_predict - start]
+
+# Confusion Matrix
+plt.figure(figsize=(5, 5))
+ConfusionMatrixDisplay.from_estimator(model, X_test, y_test, cmap=plt.cm.Blues)
+plt.title('Confusion Matrix - Decision Tree')
+plt.tight_layout()
+plt.show()
+
+# Feature Importance - FIXED FOR NUMPY ARRAYS
+plt.figure(figsize=(10, 8))
+
+# Create meaningful feature names based on your predictive maintenance dataset
+feature_names = [
+    'Type', 'Air temperature [K]', 'Process temperature [K]', 
+    'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]',
+    'Machine failure', 'Tool_Risk', 'Operation_Mode', 'Feature_9', 'Feature_10'
+]
+
+# If you have different features, adjust the names accordingly
+# Alternatively, use generic names
+if len(feature_names) != len(model.feature_importances_):
+    feature_names = [f'Feature_{i}' for i in range(len(model.feature_importances_))]
+
+# Create and plot feature importances
+feat_importances = pd.Series(model.feature_importances_, index=feature_names)
+top_features = feat_importances.nlargest(20)
+
+# Plot
+top_features.plot(kind='barh')
+plt.title('Decision Tree - Top Feature Importances')
+plt.xlabel('Importance Score')
+plt.gca().invert_yaxis()  # Most important at top
+plt.tight_layout()
+plt.show()
+
+# Print the feature importances
+print("\nFeature Importances:")
+for feature, importance in top_features.items():
+    print(f"  {feature}: {importance:.4f}")

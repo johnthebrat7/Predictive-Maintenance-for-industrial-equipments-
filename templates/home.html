@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Maintenance Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container { width: 100%; max-width: 800px; padding: 20px; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 { text-align: center; margin-bottom: 30px; letter-spacing: 2px; text-transform: uppercase; }
+
+        .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+
+        label { margin-bottom: 8px; font-size: 0.85rem; color: #00d2ff; font-weight: bold; }
+
+        input, select {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        /* FIX: Ensures the dropdown options are visible */
+        select option {
+            background-color: #203a43; /* Matches the dark theme */
+            color: white; /* Makes text pop */
+            padding: 10px;
+        }
+
+        input:focus, select:focus { 
+            border-color: #00d2ff; 
+            background: rgba(255, 255, 255, 0.15); 
+        }
+
+        .predict-btn {
+            grid-column: span 2;
+            margin-top: 20px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: #00d2ff;
+            color: #0f2027;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.4);
+            background: #ffffff;
+        }
+
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: #aaa; text-decoration: none; font-size: 0.9rem; }
+        .nav-link:hover { color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        <h2>Telemetry Analysis</h2>
+        
+        <form action="/predict" method="post" class="grid-form">
+            <div class="input-group">
+                <label>Product Type</label>
+                <select name="type">
+                    <option value="L">Low (L)</option>
+                    <option value="M">Medium (M)</option>
+                    <option value="H">High (H)</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Air Temp [K]</label>
+                <input type="number" step="0.01" name="air_temp" placeholder="e.g. 298.1" required>
+            </div>
+
+            <div class="input-group">
+                <label>Process Temp [K]</label>
+                <input type="number" step="0.01" name="proc_temp" placeholder="e.g. 308.6" required>
+            </div>
+
+            <div class="input-group">
+                <label>Rotational Speed [rpm]</label>
+                <input type="number" name="speed" placeholder="e.g. 1551" required>
+            </div>
+
+            <div class="input-group">
+                <label>Torque [Nm]</label>
+                <input type="number" step="0.1" name="torque" placeholder="e.g. 42.8" required>
+            </div>
+
+            <div class="input-group">
+                <label>Tool Wear [min]</label>
+                <input type="number" name="wear" placeholder="e.g. 60" required>
+            </div>
+
+            <button type="submit" class="predict-btn">DIAGNOSE MACHINE</button>
+        </form>
+
+        {% if prediction_text %}
+        <div class="result-box" style="background-color: {{ res_color | default('#34495e') }};">
+            <h3 style="margin: 0; font-weight: 800;">{{ prediction_text }}</h3>
+        </div>
+        {% endif %}
+
+        <a href="/" class="nav-link">← Return to Landing</a>
+    </div>
+</div>
+
+</body>
+</html>
